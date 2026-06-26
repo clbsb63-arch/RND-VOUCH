@@ -40,6 +40,8 @@ client.on("interactionCreate", async interaction => {
     const message = interaction.options.getString("message");
     const id      = incrementCount();
 
+    const image = interaction.options.getAttachment("image");
+
     const embed = new EmbedBuilder()
       .setColor(0xcc0000)
       .setAuthor({
@@ -54,6 +56,8 @@ client.on("interactionCreate", async interaction => {
       )
       .setFooter({ text: `Vouch ID: ${id} · RND.SHOP` })
       .setTimestamp();
+
+    if (image) embed.setImage(image.url);
 
     try {
       const vouchChannel = await client.channels.fetch(VOUCH_CHANNEL_ID);
@@ -74,6 +78,7 @@ const commands = [
     .addUserOption(o => o.setName("utilisateur").setDescription("Le vendeur / service").setRequired(true))
     .addIntegerOption(o => o.setName("note").setDescription("Note de 1 à 5").setRequired(true).setMinValue(1).setMaxValue(5))
     .addStringOption(o => o.setName("message").setDescription("Ton avis").setRequired(true))
+    .addAttachmentOption(o => o.setName("image").setDescription("Screenshot de preuve (optionnel)").setRequired(false))
     .toJSON(),
 ];
 
