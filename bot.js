@@ -33,6 +33,8 @@ client.on("interactionCreate", async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === "vouch") {
+    await interaction.deferReply({ ephemeral: true });
+
     const user    = interaction.options.getUser("utilisateur");
     const note    = interaction.options.getInteger("note");
     const message = interaction.options.getString("message");
@@ -45,21 +47,22 @@ client.on("interactionCreate", async interaction => {
         iconURL: interaction.user.displayAvatarURL({ dynamic: true }),
       })
       .setTitle("Vouch")
-      .setDescription(`${message}`)
+      .setDescription(message)
       .addFields(
         { name: "Rating", value: `${stars(note)} (${note}/5)`, inline: true },
-        { name: "Pour", value: `<@${user.id}>`, inline: true },
+        { name: "Pour",   value: `<@${user.id}>`,             inline: true },
       )
       .setFooter({ text: `Vouch ID: ${id} · RND.SHOP` })
       .setTimestamp();
 
-    const vouchChannel = interaction.guild.channels.cache.get(VOUCH_CHANNEL_ID);
-    if (!vouchChannel) {
-      return interaction.reply({ content: "❌ Salon vouch introuvable. Vérifie VOUCH_CHANNEL_ID.", ephemeral: true });
+    try {
+      const vouchChannel = await client.channels.fetch(VOUCH_CHANNEL_ID);
+      await vouchChannel.send({ embeds: [embed] });
+      await interaction.editReply({ content: `✅ Vouch envoyé !` });
+    } catch (err) {
+      console.error(err);
+      await interaction.editReply({ content: `❌ Erreur : ${err.message}` });
     }
-
-    await vouchChannel.send({ embeds: [embed] });
-    await interaction.reply({ content: `✅ Vouch envoyé dans ${vouchChannel} !`, ephemeral: true });
   }
 });
 
